@@ -1,0 +1,27 @@
+{
+  "keep_empty_cells": false,
+  "keep_output": false,
+  "keep_count": false,
+  "keep_execution_count": false,
+  "keep_metadata": {
+    "language_info": {
+      "name": "python",
+      "version": ""
+    },
+    "kernelspec": {
+      "name": "",
+      "display_name": ""
+    },
+    "colab": {
+      "name": "",
+      "provenance": [],
+      "toc_visible": true
+    }
+  },
+  "additional_keep_metadata": [
+    "colab",
+    "language_info",
+    "kernelspec"
+  ]
+}
+

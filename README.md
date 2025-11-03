@@ -98,6 +98,59 @@ Each virtual slope generates its own `.pro` file:
 
 ---
 
+## Repository Management
+
+This repository uses best practices for managing Jupyter notebooks in git:
+
+### Automatic Output Stripping
+
+Notebook outputs are automatically stripped before commits using `nbstripout`. This keeps the repository clean and avoids merge conflicts.
+
+**Setup** (one-time):
+```bash
+pip install nbstripout
+nbstripout --install
+```
+
+Or use the setup script:
+```bash
+./setup_git.sh
+```
+
+**Manual stripping** (if needed):
+```bash
+nbstripout SNOWPACKforPatrollers.ipynb
+```
+
+### File Organization
+
+- **`.gitignore`**: Excludes outputs, temporary files, and OS-specific files
+- **`.gitattributes`**: Configures automatic notebook output stripping
+- **`.nbstripout.json`**: Configures which metadata to preserve
+
+### Contributing
+
+When contributing to this repository:
+
+1. **Before committing**: Notebook outputs are automatically stripped
+2. **Test locally**: Ensure notebooks run without errors
+3. **Keep outputs out**: Never commit notebook outputs manually
+4. **Update documentation**: Keep README current if making significant changes
+
+### Cleaning Notebooks
+
+To manually clean notebook outputs:
+
+```bash
+# Clean a specific notebook
+nbstripout SNOWPACKforPatrollers.ipynb
+
+# Clean all notebooks
+find . -name "*.ipynb" -exec nbstripout {} \;
+```
+
+---
+
 ## Dependencies & Licenses
 
 This project uses the following open-source software and data sources:
