@@ -1,0 +1,17 @@
+# Auto-detect text files and perform LF normalization
+* text=auto
+
+# Notebook files - strip outputs before committing
+*.ipynb filter=nbstripout
+
+# Ensure these files are always treated as text
+*.md text
+*.py text
+*.json text
+*.yaml text
+*.yml text
+*.txt text
+*.ini text
+*.sno text
+*.smet text
+
