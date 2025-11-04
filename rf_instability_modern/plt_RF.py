@@ -68,6 +68,7 @@ def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
 def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, resolution='D'):
     """
     Plot seasonal evolution of instability probability.
+    Matches original 2022 implementation style using actual datetime values and layer depths.
     
     Args:
         df_evo: DataFrame with datetime, layer_top, and variable columns
@@ -85,63 +86,127 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
     if var not in df_evo.columns:
         raise ValueError(f"Variable '{var}' not found in DataFrame")
     
-    # Get unique dates
-    dates = sorted(df_evo['datetime'].unique())
-    
-    if len(dates) < 2:
-        raise ValueError("Need at least 2 dates for evolution plot")
-    
-    # Create date range
+    # Create date range matching the original style
     date_range = pd.date_range(start, stop, freq=resolution)
     
-    # Prepare data for plotting
-    # For pcolormesh with shading='flat':
-    # - X edges: shape (M,) where M = number of X edges
-    # - Y edges: shape (N,) where N = number of Y edges
-    # - C values: shape (N-1, M-1)
+    # Get unique dates that actually exist in the data
+    dates_in_data = sorted(df_evo['datetime'].unique())
     
-    # Create X edges: need len(date_range) + 1 edges for len(date_range) cells
-    x_centers = np.arange(len(date_range))
-    if len(x_centers) > 1:
-        # For M centers, we need M+1 edges: [center[0]-0.5, center[0]+0.5, center[1]+0.5, ..., center[M-1]+0.5]
-        x_edges = np.concatenate([[x_centers[0] - 0.5], x_centers + 0.5])
+    if len(dates_in_data) < 2:
+        raise ValueError("Need at least 2 dates for evolution plot")
+    
+    # Build a unified depth grid from all unique layer_top values across all dates
+    # This preserves the actual layer structure rather than interpolating to a fixed grid
+    all_depths = sorted(df_evo['layer_top'].unique())
+    if len(all_depths) == 0:
+        raise ValueError("No depth data found")
+    
+    # Create depth edges: [0, depth[0], depth[1], ..., depth[N-1]]
+    # Using actual layer depths preserves the original plotting style
+    if len(all_depths) == 1:
+        depth_edges = np.array([0.0, all_depths[0]])
     else:
-        x_edges = np.array([x_centers[0] - 0.5, x_centers[0] + 0.5])
+        depth_edges = np.concatenate([[0.0], all_depths])
     
-    depth_max = df_evo['layer_top'].max()
-    depth_edges = np.linspace(0, depth_max, 21)  # 21 edges = 20 depth bins
+    # Create a pivot table: rows = depths, columns = dates
+    # This matches the original implementation structure
+    pivot_table = df_evo.pivot_table(
+        index='layer_top', 
+        columns='datetime', 
+        values=var,
+        aggfunc='first'  # Take first value if duplicates exist
+    )
     
-    # Create mesh data: shape (len(depth_edges)-1, len(date_range))
-    # Which is (N-1, M-1) where M = len(x_edges), N = len(depth_edges)
-    Z = np.full((len(depth_edges) - 1, len(date_range)), np.nan)
+    # Sort by depth (descending, so surface is at top)
+    pivot_table = pivot_table.sort_index(ascending=False)
     
-    for i, dt in enumerate(date_range):
-        day_data = df_evo[df_evo['datetime'] == dt]
-        if len(day_data) == 0:
-            continue
-        
-        # Interpolate values to depth grid
-        for j in range(len(depth_edges) - 1):
-            depth_center = (depth_edges[j] + depth_edges[j + 1]) / 2
-            # Find closest layer
-            idx = np.abs(day_data['layer_top'].values - depth_center).argmin()
-            Z[j, i] = day_data[var].iloc[idx]
+    # Reindex to include all dates in date_range (fill missing with NaN)
+    pivot_table = pivot_table.reindex(columns=date_range)
     
-    # Plot with correct dimensions
-    # x_edges: (len(date_range)+1,), depth_edges: (21,), Z: (20, len(date_range))
+    # Reindex to include all depth edges (for proper pcolormesh edges)
+    # Use the actual depth values and interpolate if needed
+    depth_index = pivot_table.index.values
+    Z = pivot_table.values  # Shape: (n_depths, n_dates)
+    
+    # For pcolormesh with shading='flat':
+    # - X edges: datetime edges (n_dates + 1)
+    # - Y edges: depth edges (n_depths + 1)
+    # - C values: Z (n_depths, n_dates) = (N, M) where N=n_depths, M=n_dates
+    # But we need C shape (N-1, M-1) for shading='flat'
+    
+    # Create depth edges from the actual depth values
+    # depth_index is sorted descending (surface to bottom), so depth[0] is largest (surface)
+    if len(depth_index) > 1:
+        # Sort depths ascending for edge calculation (0 = surface, increasing = deeper)
+        depths_sorted = np.sort(depth_index)
+        depth_edges_actual = np.zeros(len(depths_sorted) + 1)
+        depth_edges_actual[0] = 0.0  # Surface
+        # Create edges as midpoints between consecutive depths
+        for i in range(len(depths_sorted) - 1):
+            depth_edges_actual[i + 1] = (depths_sorted[i] + depths_sorted[i + 1]) / 2
+        # Last edge extends beyond deepest layer
+        depth_edges_actual[-1] = depths_sorted[-1] + (depths_sorted[-1] - depths_sorted[-2]) / 2 if len(depths_sorted) > 1 else depths_sorted[-1] + 0.1
+        # Reverse to match descending order (surface at top for plotting)
+        depth_edges_actual = depth_edges_actual[::-1]
+    else:
+        depth_edges_actual = np.array([depth_index[0] + 0.1, 0.0]) if len(depth_index) > 0 else np.array([0.0, 1.0])
+    
+    # Create datetime edges
+    if len(date_range) > 1:
+        # Calculate half-interval for datetime edges
+        half_interval = (date_range[1] - date_range[0]) / 2
+        date_edges = pd.to_datetime(
+            np.concatenate([
+                [date_range[0] - half_interval],
+                date_range + half_interval
+            ])
+        )
+    else:
+        half_interval = pd.Timedelta(days=0.5)
+        date_edges = pd.to_datetime([
+            date_range[0] - half_interval,
+            date_range[0] + half_interval
+        ])
+    
+    # For pcolormesh with shading='flat':
+    # If X has M elements and Y has N elements, C must be (N-1, M-1)
+    # Our Z is (n_depths, n_dates), so we need to adjust
+    
+    # Actually, with shading='flat', if we have:
+    # - X edges: shape (M,) = len(date_edges)
+    # - Y edges: shape (N,) = len(depth_edges_actual)
+    # - C: shape (N-1, M-1) = (len(depth_edges_actual)-1, len(date_edges)-1)
+    
+    # But Z is (n_depths, n_dates) = (len(depth_index), len(date_range))
+    # We need Z to be (len(depth_edges_actual)-1, len(date_edges)-1)
+    
+    # Since depth_edges_actual has len(depth_index)+1 elements and date_edges has len(date_range)+1 elements,
+    # Z should be (len(depth_index), len(date_range)) which matches!
+    
+    # Plot with actual datetime values and actual depth values
     cmap = plt.cm.get_cmap('RdYlBu_r')
-    im = ax.pcolormesh(x_edges, depth_edges, Z, cmap=cmap, shading='flat', vmin=0, vmax=1)
+    
+    # Convert datetime edges to matplotlib date numbers for pcolormesh
+    date_edges_num = mpl.dates.date2num(date_edges)
+    
+    # Ensure Z has correct shape: (N-1, M-1) where N=len(depth_edges_actual), M=len(date_edges)
+    # Z currently is (len(depth_index), len(date_range))
+    # depth_edges_actual has len(depth_index)+1 elements
+    # date_edges has len(date_range)+1 elements
+    # So Z shape (len(depth_index), len(date_range)) = (N-1, M-1) ✓
+    
+    im = ax.pcolormesh(date_edges_num, depth_edges_actual, Z, cmap=cmap, shading='flat', vmin=0, vmax=1)
     
     if colorbar:
         plt.colorbar(im, ax=ax, label=var)
     
-    # Set x-axis labels - use x_centers for tick positions
-    num_ticks = min(10, len(date_range))
-    tick_indices = np.linspace(0, len(x_centers) - 1, num_ticks, dtype=int)
-    ax.set_xticks(x_centers[tick_indices])
-    ax.set_xticklabels([date_range[i].strftime('%Y-%m-%d') for i in tick_indices], rotation=45)
+    # Format x-axis as dates
+    ax.xaxis_date()
+    fig.autofmt_xdate(rotation=45)
     
-    ax.set_ylabel('Snow depth [cm]')
+    ax.set_ylabel('Snow depth [m]')
     ax.invert_yaxis()
     ax.set_xlabel('Date')
+    
+    return fig
 
