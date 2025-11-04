@@ -165,7 +165,12 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
             if len(gt) == 0:
                 continue
             x = [ts, ts + datetime.timedelta(days=1)]
-            cb = ax.pcolormesh(x, depth_edges, np.array([gt, gt]).transpose(), 
+            # For pcolormesh with shading='flat':
+            # X edges: 2 elements (M=2), Y edges: len(depth_edges) elements (N)
+            # C needs shape (N-1, M-1) = (len(depth_edges)-1, 1)
+            # So reshape gt to (len(gt), 1) instead of (len(gt), 2)
+            gt_reshaped = gt.reshape(-1, 1)
+            cb = ax.pcolormesh(x, depth_edges, gt_reshaped, 
                               cmap=cmap_gt, vmin=0.5, vmax=9.5)
         else:
             # Plot P_unstable (or other variable)
@@ -183,7 +188,12 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
             norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
             
             x = [ts, ts + datetime.timedelta(days=1)]
-            cb = ax.pcolormesh(x, depth_edges, np.array([p, p]).transpose(), 
+            # For pcolormesh with shading='flat':
+            # X edges: 2 elements (M=2), Y edges: len(depth_edges) elements (N)
+            # C needs shape (N-1, M-1) = (len(depth_edges)-1, 1)
+            # So reshape p to (len(p), 1) instead of (len(p), 2)
+            p_reshaped = p.reshape(-1, 1)
+            cb = ax.pcolormesh(x, depth_edges, p_reshaped, 
                               cmap=cmap, norm=norm)
     
     ax.set_ylabel('Snow depth [cm]')
