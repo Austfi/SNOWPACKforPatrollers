@@ -19,6 +19,7 @@ import pyunstable
 def create_RFprof(prof, slopeangle, model):
     """
     Create RF profile dataframe with features and P_unstable.
+    Includes original profile fields (hardness, graintype) for plotting compatibility.
     
     Args:
         prof: Profile dictionary from readProfile.read_profile()
@@ -26,7 +27,7 @@ def create_RFprof(prof, slopeangle, model):
         model: Random Forest model (loaded with joblib)
     
     Returns:
-        DataFrame with features and P_unstable column
+        DataFrame with features, P_unstable, and original profile fields
     """
     # Compute features using pyunstable
     features = pyunstable.comp_features(prof, slopeangle)
@@ -40,6 +41,17 @@ def create_RFprof(prof, slopeangle, model):
     # Add layer_top if available
     if 'height' in prof:
         features['layer_top'] = prof['height']
+    
+    # Add original profile fields for plotting compatibility
+    if 'hand_hardness' in prof:
+        features['hardness'] = prof['hand_hardness']
+    elif 'hardness' in prof:
+        features['hardness'] = prof['hardness']
+    
+    if 'grain_type' in prof:
+        features['graintype'] = prof['grain_type']
+    elif 'graintype' in prof:
+        features['graintype'] = prof['graintype']
     
     return features
 

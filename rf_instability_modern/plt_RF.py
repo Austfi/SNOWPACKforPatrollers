@@ -5,85 +5,114 @@ This module provides plotting functions compatible with the original RF instabil
 workflow from the WSL/SLF repository:
 https://git.wsl.ch/mayers/random_forest_snow_instability_model.git
 
+Original plotting code by: Stephanie Mayer (WSL Institute for Snow and Avalanche Research SLF)
 Original model by: mayers, fherla (WSL Institute for Snow and Avalanche Research SLF)
 
 Functions:
-- plot_sp_single_P0: Plot single profile with P_unstable
+- plot_sp_single_P0: Plot single profile with grain types, hardness, and P_unstable
 - plot_evo_SP: Plot seasonal evolution of P_unstable over time
 """
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.colors as mcolors
+import matplotlib.dates as mdates
 import pandas as pd
 import numpy as np
+import datetime
 
 
 def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
     """
-    Plot single profile with P_unstable or other variable.
+    Plot single profile with grain types, hardness, and P_unstable.
+    Matches original implementation by Stephanie Mayer.
     
     Args:
         fig: matplotlib figure
         ax: matplotlib axes
-        df_prof: DataFrame with layer_top and variable column
+        df_prof: DataFrame with layer_top, hardness, graintype, and variable column
         var: Variable name to plot (default: 'P_unstable')
-        colorbar: Whether to show colorbar
+        colorbar: Whether to show grain type colorbar
     """
-    if 'layer_top' not in df_prof.columns:
-        raise ValueError("DataFrame must contain 'layer_top' column")
+    # Check required columns
+    required_cols = ['layer_top', 'hardness', 'graintype', var]
+    missing_cols = [col for col in required_cols if col not in df_prof.columns]
+    if missing_cols:
+        raise ValueError(f"DataFrame must contain columns: {missing_cols}")
     
-    if var not in df_prof.columns:
-        raise ValueError(f"Variable '{var}' not found in DataFrame")
+    # Extract data
+    hh = df_prof['hardness'].values
+    layer_top = df_prof['layer_top'].values
+    P_unstable = df_prof[var].values
+    nr_uppermost = len(layer_top) - 1
     
-    # Get depth values (layer tops)
-    depth = df_prof['layer_top'].values
-    values = df_prof[var].values
+    # Extract grain type (first two digits)
+    gt = np.divmod(df_prof['graintype'].values, 100)[0].astype(int)
     
-    # Create depth edges for pcolormesh
-    # For N layers, we need N+1 edges: [0, depth[0], depth[1], ..., depth[N-1]]
-    if len(depth) > 1:
-        depth_edges = np.concatenate([[0], depth])
-    else:
-        depth_edges = np.array([0, depth[0] if len(depth) > 0 else 1])
+    # Grain type colormap (original colors)
+    cmap = ['greenyellow', 'darkgreen', 'pink', 'lightblue', 'blue', 'magenta', 'red', 'cyan', 'lightblue']
     
-    # For pcolormesh with shading='flat':
-    # - X edges: shape (M,) where M = number of X edges
-    # - Y edges: shape (N,) where N = number of Y edges  
-    # - C values: shape (N-1, M-1) where C[i,j] is the value for the cell between edges [i:i+1, j:j+1]
+    # Plot contours
+    ax.plot([0, 0], [0, layer_top[-1]], c='black', linewidth=1)
+    ax.plot([0, -hh[0]], [0, 0], c='black', linewidth=1)
     
-    # Create X edges: [0, 1] for a single column plot
-    x_edges = np.array([0, 1])
+    # Plot profile against hand hardness
+    y1 = 0
+    for iy, y in enumerate(layer_top):
+        if iy == nr_uppermost:
+            ax.plot([0, -hh[iy]], [y, y], c='black', linewidth=1)
+        else:
+            ax.plot([0, np.max([-hh[iy], -hh[iy + 1]])], [y, y], c='black', linewidth=1)
+        ax.plot([-hh[iy], -hh[iy]], [y1, y], c='black', linewidth=1)
+        # Fill with grain type color
+        gt_idx = int(gt[iy]) - 1
+        if 0 <= gt_idx < len(cmap):
+            ax.fill_betweenx([y1, y], 0, -hh[iy], color=cmap[gt_idx])
+        y1 = y
     
-    # Create C array: shape (len(depth_edges)-1, len(x_edges)-1) = (N, 1)
-    # Each row represents one depth layer
-    C = values.reshape(-1, 1)  # Shape: (N, 1)
+    # Set x-axis for hand hardness
+    ax.set_xlim(0, 5.5)
+    ax.set_xticks(np.arange(0, 5.5, 1))
+    ax.set_xticklabels(['', 'F ', '4F', '1F', 'P', 'K'])
+    # Convert depth to cm if needed (original uses cm)
+    depth_max_cm = layer_top[-1] * 100 if layer_top[-1] < 10 else layer_top[-1]
+    ax.set_ylabel('Snow depth [cm]')
+    ax.set_xlabel('hand hardness')
     
-    # Set colormap - use YlOrRd (Yellow-Orange-Red) for intuitive visualization:
-    # Yellow = low instability (stable), Red = high instability (unstable)
-    cmap = plt.cm.get_cmap('YlOrRd')
+    # Plot P_unstable on second x-axis
+    ax11 = None
+    if len(P_unstable) > 0:
+        ax11 = ax.twiny()
+        height_var = np.repeat(np.concatenate((np.array([0]), layer_top)), 2)[1:-1]
+        var_repeat = np.repeat(P_unstable, 2)
+        ax11.plot(var_repeat, height_var, c='black', linewidth=2.5, label='$\\mathregular{P_{unstable}}$')
+        ax11.set_xlim([0, 1])
+        ax11.set_xticks([0, 0.5, 1])
+        ax11.set_xticklabels(['0', '0.5', '1'])
+        ax11.set_xlabel('$P_{unstable}$')
+        ax11.legend(loc=1)
     
-    # Plot with correct dimensions
-    # x_edges: (2,), depth_edges: (N+1,), C: (N, 1)
-    im = ax.pcolormesh(x_edges, depth_edges, C, cmap=cmap, shading='flat', vmin=0, vmax=1)
-    
+    # Grain type colorbar
     if colorbar:
-        cbar = plt.colorbar(im, ax=ax, label=var)
-        cbar.ax.tick_params(labelsize=10)
+        ax_pos = np.array(ax.get_position())
+        axcolor = fig.add_axes([0.85, ax_pos[0, 1], 0.02, ax_pos[1, 1] - ax_pos[0, 1]])
+        cmapcolorbar = ['greenyellow', 'darkgreen', 'pink', 'lightblue', 'blue', 'magenta', 'red', 'cyan']
+        ticklabels = ['PP', 'DF', 'RG', 'FC', 'DH', 'SH', 'MF', 'IF']
+        cmapc = mpl.colors.ListedColormap(cmapcolorbar)
+        bounds = np.arange(len(cmapcolorbar) + 1)
+        norm = mpl.colors.BoundaryNorm(bounds, cmapc.N)
+        ticks = bounds + 0.5
+        cb1 = mpl.colorbar.ColorbarBase(axcolor, cmap=cmapc, norm=norm, ticks=ticks, 
+                                        orientation='vertical', label='grain type')
+        cb1.ax.set_yticklabels(ticklabels)
+        plt.subplots_adjust(bottom=0.1, right=0.8, top=0.9)
     
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, depth.max() if len(depth) > 0 else 1)
-    ax.invert_yaxis()
-    ax.set_xlabel('')
-    ax.set_xticks([])
-    ax.set_ylabel('Snow depth [m]', fontsize=12)
-    ax.tick_params(labelsize=10)
-    ax.grid(True, alpha=0.3, linestyle='--')
-    ax.set_title('P_unstable Profile', fontsize=13, fontweight='bold')
+    return ax11
 
 
 def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, resolution='D'):
     """
     Plot seasonal evolution of instability probability.
-    Matches original 2022 implementation style using actual datetime values and layer depths.
+    Matches original implementation by Stephanie Mayer.
     
     Args:
         df_evo: DataFrame with datetime, layer_top, and variable columns
@@ -101,132 +130,79 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
     if var not in df_evo.columns:
         raise ValueError(f"Variable '{var}' not found in DataFrame")
     
-    # Create date range matching the original style
-    date_range = pd.date_range(start, stop, freq=resolution)
+    # Grain type colormap (for graintype plotting)
+    cgt = ['greenyellow', 'darkgreen', 'pink', 'lightblue', 'blue', 'magenta', 'red', 'cyan', 'lightblue']
+    cmap_gt = mcolors.ListedColormap(cgt)
     
-    # Get unique dates that actually exist in the data
-    dates_in_data = sorted(df_evo['datetime'].unique())
+    # Get date range
+    mydates = pd.date_range(start, stop, freq=resolution).tolist()
     
-    if len(dates_in_data) < 2:
-        raise ValueError("Need at least 2 dates for evolution plot")
+    # Plot each date individually (original approach)
+    for ts in mydates:
+        df = df_evo[df_evo['datetime'] == ts].copy()
+        df.reset_index(inplace=True, drop=True)
+        
+        if len(df) == 0:
+            continue
+        
+        depth = np.array(df['layer_top'])
+        depth_edges = np.concatenate((np.array([0]), depth))
+        
+        # Handle graintype plotting
+        if var == 'graintype':
+            if 'graintype' not in df.columns:
+                continue
+            gt = np.divmod(df['graintype'].values, 100)[0].astype(int)
+            if len(gt) == 0:
+                continue
+            x = [ts, ts + datetime.timedelta(days=1)]
+            cb = ax.pcolormesh(x, depth_edges, np.array([gt, gt]).transpose(), 
+                              cmap=cmap_gt, vmin=0.5, vmax=9.5)
+        else:
+            # Plot P_unstable (or other variable)
+            p = df[var].values
+            if len(p) == 0:
+                continue
+            
+            # Use viridis colormap (original choice)
+            cmap = plt.cm.viridis
+            cmaplist = [cmap(i) for i in range(cmap.N)]
+            cmap = mpl.colors.LinearSegmentedColormap.from_list('Custom cmap', cmaplist, cmap.N)
+            
+            # Define bins and normalize
+            bounds = np.linspace(0, 1, 11)
+            norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+            
+            x = [ts, ts + datetime.timedelta(days=1)]
+            cb = ax.pcolormesh(x, depth_edges, np.array([p, p]).transpose(), 
+                              cmap=cmap, norm=norm)
     
-    # Build a unified depth grid from all unique layer_top values across all dates
-    # This preserves the actual layer structure rather than interpolating to a fixed grid
-    all_depths = sorted(df_evo['layer_top'].unique())
-    if len(all_depths) == 0:
-        raise ValueError("No depth data found")
+    ax.set_ylabel('Snow depth [cm]')
+    ax.set_xlabel('Date')
+    ax.set_xlim(start, stop)
     
-    # Create depth edges: [0, depth[0], depth[1], ..., depth[N-1]]
-    # Using actual layer depths preserves the original plotting style
-    if len(all_depths) == 1:
-        depth_edges = np.array([0.0, all_depths[0]])
-    else:
-        depth_edges = np.concatenate([[0.0], all_depths])
+    # Format dates
+    fig.autofmt_xdate()
+    ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
     
-    # Create a pivot table: rows = depths, columns = dates
-    # This matches the original implementation structure
-    pivot_table = df_evo.pivot_table(
-        index='layer_top', 
-        columns='datetime', 
-        values=var,
-        aggfunc='first'  # Take first value if duplicates exist
-    )
-    
-    # Sort by depth (descending, so surface is at top)
-    pivot_table = pivot_table.sort_index(ascending=False)
-    
-    # Reindex to include all dates in date_range (fill missing with NaN)
-    pivot_table = pivot_table.reindex(columns=date_range)
-    
-    # Reindex to include all depth edges (for proper pcolormesh edges)
-    # Use the actual depth values and interpolate if needed
-    depth_index = pivot_table.index.values
-    Z = pivot_table.values  # Shape: (n_depths, n_dates)
-    
-    # For pcolormesh with shading='flat':
-    # - X edges: datetime edges (n_dates + 1)
-    # - Y edges: depth edges (n_depths + 1)
-    # - C values: Z (n_depths, n_dates) = (N, M) where N=n_depths, M=n_dates
-    # But we need C shape (N-1, M-1) for shading='flat'
-    
-    # Create depth edges from the actual depth values
-    # depth_index is sorted descending (surface to bottom), so depth[0] is largest (surface)
-    if len(depth_index) > 1:
-        # Sort depths ascending for edge calculation (0 = surface, increasing = deeper)
-        depths_sorted = np.sort(depth_index)
-        depth_edges_actual = np.zeros(len(depths_sorted) + 1)
-        depth_edges_actual[0] = 0.0  # Surface
-        # Create edges as midpoints between consecutive depths
-        for i in range(len(depths_sorted) - 1):
-            depth_edges_actual[i + 1] = (depths_sorted[i] + depths_sorted[i + 1]) / 2
-        # Last edge extends beyond deepest layer
-        depth_edges_actual[-1] = depths_sorted[-1] + (depths_sorted[-1] - depths_sorted[-2]) / 2 if len(depths_sorted) > 1 else depths_sorted[-1] + 0.1
-        # Reverse to match descending order (surface at top for plotting)
-        depth_edges_actual = depth_edges_actual[::-1]
-    else:
-        depth_edges_actual = np.array([depth_index[0] + 0.1, 0.0]) if len(depth_index) > 0 else np.array([0.0, 1.0])
-    
-    # Create datetime edges
-    if len(date_range) > 1:
-        # Calculate half-interval for datetime edges
-        half_interval = (date_range[1] - date_range[0]) / 2
-        date_edges = pd.to_datetime(
-            np.concatenate([
-                [date_range[0] - half_interval],
-                date_range + half_interval
-            ])
-        )
-    else:
-        half_interval = pd.Timedelta(days=0.5)
-        date_edges = pd.to_datetime([
-            date_range[0] - half_interval,
-            date_range[0] + half_interval
-        ])
-    
-    # For pcolormesh with shading='flat':
-    # If X has M elements and Y has N elements, C must be (N-1, M-1)
-    # Our Z is (n_depths, n_dates), so we need to adjust
-    
-    # Actually, with shading='flat', if we have:
-    # - X edges: shape (M,) = len(date_edges)
-    # - Y edges: shape (N,) = len(depth_edges_actual)
-    # - C: shape (N-1, M-1) = (len(depth_edges_actual)-1, len(date_edges)-1)
-    
-    # But Z is (n_depths, n_dates) = (len(depth_index), len(date_range))
-    # We need Z to be (len(depth_edges_actual)-1, len(date_edges)-1)
-    
-    # Since depth_edges_actual has len(depth_index)+1 elements and date_edges has len(date_range)+1 elements,
-    # Z should be (len(depth_index), len(date_range)) which matches!
-    
-    # Plot with actual datetime values and actual depth values
-    # Use YlOrRd (Yellow-Orange-Red) for intuitive visualization:
-    # Yellow = low instability (stable), Red = high instability (unstable)
-    cmap = plt.cm.get_cmap('YlOrRd')
-    
-    # Convert datetime edges to matplotlib date numbers for pcolormesh
-    date_edges_num = mpl.dates.date2num(date_edges)
-    
-    # Ensure Z has correct shape: (N-1, M-1) where N=len(depth_edges_actual), M=len(date_edges)
-    # Z currently is (len(depth_index), len(date_range))
-    # depth_edges_actual has len(depth_index)+1 elements
-    # date_edges has len(date_range)+1 elements
-    # So Z shape (len(depth_index), len(date_range)) = (N-1, M-1) ✓
-    
-    im = ax.pcolormesh(date_edges_num, depth_edges_actual, Z, cmap=cmap, shading='flat', vmin=0, vmax=1)
-    
+    # Colorbar
     if colorbar:
-        cbar = plt.colorbar(im, ax=ax, label=var)
-        cbar.ax.tick_params(labelsize=10)
+        ax_pos = np.array(ax.get_position())
+        axcolor = fig.add_axes([0.9, ax_pos[0, 1], 0.02, ax_pos[1, 1] - ax_pos[0, 1]])
+        
+        if var == 'graintype':
+            cgt_no_rf = ['greenyellow', 'darkgreen', 'pink', 'lightblue', 'blue', 'magenta', 'red', 'cyan']
+            cmapc = mcolors.ListedColormap(np.array(cgt_no_rf))
+            ticks = np.arange(9)
+            norm = mpl.colors.BoundaryNorm(ticks + 0.5, cmapc.N)
+            cbar = mpl.colorbar.ColorbarBase(axcolor, cmap=cmapc, norm=norm, ticks=ticks,
+                                            orientation='vertical')
+            cbar.set_ticklabels(['PP', 'DF', 'RG', 'FC', 'DH', 'SH', 'MF(cr)', 'IF'])
+            cbar.set_label('Grain type')
+        else:
+            cbar = plt.colorbar(cb, axcolor)
+            cbar.set_label('$P_\\mathrm{unstable}$')
     
-    # Format x-axis as dates
-    ax.xaxis_date()
-    fig.autofmt_xdate(rotation=45)
+    fig.autofmt_xdate()
     
-    ax.set_ylabel('Snow depth [m]', fontsize=12)
-    ax.set_xlabel('Date', fontsize=12)
-    ax.tick_params(labelsize=10)
-    ax.grid(True, alpha=0.3, linestyle='--', which='both')
-    ax.invert_yaxis()
-    
-    return fig
-
+    return cb
