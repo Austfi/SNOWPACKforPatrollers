@@ -84,11 +84,11 @@ Executes the compiled `snowpack` binary with your configuration.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Austfi/SNOWPACKforPatrollers/blob/dev/Snowprofile_Colab_Tutorial.ipynb)
 
-A tutorial notebook for working with CAAML v6 snow profile files. Teaches you how to:
-- Load and read CAAML files using the `snowprofile` Python package
+Tutorial for working with CAAML v6 snow profile files using the [`snowprofile`](https://snowprofile.readthedocs.io/en/latest/) Python package. Teaches you how to:
+- Load and read CAAML files
 - Explore snow profile data (stratigraphy, temperature, density profiles)
 - Analyze temperature gradients
-- Create visualizations of snow profiles
+- Create visualizations
 
 **Use case**: Process and visualize snow profile data from field observations or SNOWPACK outputs.
 
@@ -103,7 +103,7 @@ Random Forest snow instability analysis using SNOWPACK PRO files. Features:
 - **Seasonal evolution**: Track instability probabilities over time
 - **CSV export**: Export daily instability metrics for further analysis
 
-Automatically downloads and selects the best RF model version for your Python environment. Based on the [WSL/SLF Random Forest Snow Instability Model](https://git.wsl.ch/mayers/random_forest_snow_instability_model.git).
+Automatically downloads and selects the best RF model version for your Python environment. Based on the [WSL/SLF Random Forest Snow Instability Model](https://git.wsl.ch/mayers/random_forest_snow_instability_model.git) (WSL Institute for Snow and Avalanche Research SLF).
 
 **Use case**: Analyze SNOWPACK simulation outputs to assess snowpack instability probabilities.
 
@@ -212,6 +212,16 @@ This project uses the following open-source software and data sources:
   License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)  
   Attribution: "Weather data by Open-Meteo.com"  
   Note: Open-Meteo aggregates data from national weather services (NOAA, DWD, ECMWF, etc.)
+
+### Additional Tools
+
+- **[snowprofile](https://snowprofile.readthedocs.io/en/latest/)** — Python package for reading, analyzing, and visualizing CAAML snow profile files  
+  Used in: `Snowprofile_Colab_Tutorial.ipynb`
+
+- **[Random Forest Snow Instability Model](https://git.wsl.ch/mayers/random_forest_snow_instability_model.git)** — Machine learning model for assessing snowpack instability  
+  Authors: mayers, fherla (WSL Institute for Snow and Avalanche Research SLF)  
+  Used in: `RF_Instability.ipynb`
+
 ---
 
 ## Links
@@ -220,6 +230,7 @@ This project uses the following open-source software and data sources:
 - [SNOWPACK GitHub Repository](https://github.com/snowpack-model/snowpack)
 - [niViz Online Visualizer](https://run.niviz.org)
 - [MeteoIO Documentation](https://models.slf.ch/p/meteoio/)
+- [snowprofile Documentation](https://snowprofile.readthedocs.io/en/latest/)
 - [Open-Meteo API](https://open-meteo.com/)
 
 ---
