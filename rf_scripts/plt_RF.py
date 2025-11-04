@@ -102,7 +102,7 @@ def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
         plt.subplots_adjust(bottom=0.1, right=0.70, top=0.9)
         ax_pos = np.array(ax.get_position())
         # Position colorbar farther from plot (right edge of plot + larger gap)
-        colorbar_x = ax_pos[1, 0] + 0.35  # Large gap to the right of plot
+        colorbar_x = ax_pos[1, 0] + 0.3  # Large gap to the right of plot
         colorbar_width = 0.02
         axcolor = fig.add_axes([colorbar_x, ax_pos[0, 1], colorbar_width, ax_pos[1, 1] - ax_pos[0, 1]])
         cmapcolorbar = ['greenyellow', 'darkgreen', 'pink', 'lightblue', 'blue', 'magenta', 'red', 'cyan']
@@ -214,7 +214,7 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
         plt.subplots_adjust(bottom=0.15, right=0.73, top=0.9)
         ax_pos = np.array(ax.get_position())
         # Position colorbar farther from plot (right edge of plot + larger gap)
-        colorbar_x = ax_pos[1, 0] + 0.35  # Large gap to the right of plot
+        colorbar_x = ax_pos[1, 0] + 0.3  # Large gap to the right of plot
         colorbar_width = 0.02
         axcolor = fig.add_axes([colorbar_x, ax_pos[0, 1], colorbar_width, ax_pos[1, 1] - ax_pos[0, 1]])
         
