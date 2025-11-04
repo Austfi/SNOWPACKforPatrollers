@@ -51,13 +51,20 @@ def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
     # Grain type colormap (original colors)
     cmap = ['greenyellow', 'darkgreen', 'pink', 'lightblue', 'blue', 'magenta', 'red', 'cyan', 'lightblue']
     
+    # Handle depth units - convert to cm if needed (original uses cm)
+    # Assume if max depth < 10, it's in meters, otherwise cm
+    if layer_top[-1] < 10:
+        layer_top_cm = layer_top * 100
+    else:
+        layer_top_cm = layer_top
+    
     # Plot contours
-    ax.plot([0, 0], [0, layer_top[-1]], c='black', linewidth=1)
+    ax.plot([0, 0], [0, layer_top_cm[-1]], c='black', linewidth=1)
     ax.plot([0, -hh[0]], [0, 0], c='black', linewidth=1)
     
     # Plot profile against hand hardness
     y1 = 0
-    for iy, y in enumerate(layer_top):
+    for iy, y in enumerate(layer_top_cm):
         if iy == nr_uppermost:
             ax.plot([0, -hh[iy]], [y, y], c='black', linewidth=1)
         else:
@@ -73,8 +80,6 @@ def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
     ax.set_xlim(0, 5.5)
     ax.set_xticks(np.arange(0, 5.5, 1))
     ax.set_xticklabels(['', 'F ', '4F', '1F', 'P', 'K'])
-    # Convert depth to cm if needed (original uses cm)
-    depth_max_cm = layer_top[-1] * 100 if layer_top[-1] < 10 else layer_top[-1]
     ax.set_ylabel('Snow depth [cm]')
     ax.set_xlabel('hand hardness')
     
@@ -82,7 +87,7 @@ def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
     ax11 = None
     if len(P_unstable) > 0:
         ax11 = ax.twiny()
-        height_var = np.repeat(np.concatenate((np.array([0]), layer_top)), 2)[1:-1]
+        height_var = np.repeat(np.concatenate((np.array([0]), layer_top_cm)), 2)[1:-1]
         var_repeat = np.repeat(P_unstable, 2)
         ax11.plot(var_repeat, height_var, c='black', linewidth=2.5, label='$\\mathregular{P_{unstable}}$')
         ax11.set_xlim([0, 1])
@@ -146,6 +151,9 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
             continue
         
         depth = np.array(df['layer_top'])
+        # Handle depth units - convert to cm if needed (original uses cm)
+        if depth.max() < 10:
+            depth = depth * 100
         depth_edges = np.concatenate((np.array([0]), depth))
         
         # Handle graintype plotting
