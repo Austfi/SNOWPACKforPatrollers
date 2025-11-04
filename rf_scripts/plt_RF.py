@@ -99,10 +99,10 @@ def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
     # Grain type colorbar
     if colorbar:
         # Adjust subplot to make room for colorbar
-        plt.subplots_adjust(bottom=0.1, right=0.82, top=0.9)
+        plt.subplots_adjust(bottom=0.1, right=0.70, top=0.9)
         ax_pos = np.array(ax.get_position())
-        # Position colorbar adjacent to plot (right edge of plot + small gap)
-        colorbar_x = ax_pos[1, 0] + 0.02  # Just to the right of plot
+        # Position colorbar farther from plot (right edge of plot + larger gap)
+        colorbar_x = ax_pos[1, 0] + 0.08  # Large gap to the right of plot
         colorbar_width = 0.02
         axcolor = fig.add_axes([colorbar_x, ax_pos[0, 1], colorbar_width, ax_pos[1, 1] - ax_pos[0, 1]])
         cmapcolorbar = ['greenyellow', 'darkgreen', 'pink', 'lightblue', 'blue', 'magenta', 'red', 'cyan']
@@ -211,10 +211,10 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
     # Colorbar
     if colorbar:
         # Adjust subplot to make room for colorbar
-        plt.subplots_adjust(bottom=0.15, right=0.85, top=0.9)
+        plt.subplots_adjust(bottom=0.15, right=0.73, top=0.9)
         ax_pos = np.array(ax.get_position())
-        # Position colorbar adjacent to plot (right edge of plot + small gap)
-        colorbar_x = ax_pos[1, 0] + 0.02  # Just to the right of plot
+        # Position colorbar farther from plot (right edge of plot + larger gap)
+        colorbar_x = ax_pos[1, 0] + 0.08  # Large gap to the right of plot
         colorbar_width = 0.02
         axcolor = fig.add_axes([colorbar_x, ax_pos[0, 1], colorbar_width, ax_pos[1, 1] - ax_pos[0, 1]])
         
