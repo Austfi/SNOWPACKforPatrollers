@@ -95,12 +95,25 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
     date_range = pd.date_range(start, stop, freq=resolution)
     
     # Prepare data for plotting
-    x = np.arange(len(date_range))
-    depth_max = df_evo['layer_top'].max()
-    depth_edges = np.linspace(0, depth_max, 21)  # 20 depth bins
+    # For pcolormesh with shading='flat':
+    # - X edges: shape (M,) where M = number of X edges
+    # - Y edges: shape (N,) where N = number of Y edges
+    # - C values: shape (N-1, M-1)
     
-    # Create mesh data
-    Z = np.full((len(depth_edges) - 1, len(x)), np.nan)
+    # Create X edges: need len(date_range) + 1 edges for len(date_range) cells
+    x_centers = np.arange(len(date_range))
+    if len(x_centers) > 1:
+        # For M centers, we need M+1 edges: [center[0]-0.5, center[0]+0.5, center[1]+0.5, ..., center[M-1]+0.5]
+        x_edges = np.concatenate([[x_centers[0] - 0.5], x_centers + 0.5])
+    else:
+        x_edges = np.array([x_centers[0] - 0.5, x_centers[0] + 0.5])
+    
+    depth_max = df_evo['layer_top'].max()
+    depth_edges = np.linspace(0, depth_max, 21)  # 21 edges = 20 depth bins
+    
+    # Create mesh data: shape (len(depth_edges)-1, len(date_range))
+    # Which is (N-1, M-1) where M = len(x_edges), N = len(depth_edges)
+    Z = np.full((len(depth_edges) - 1, len(date_range)), np.nan)
     
     for i, dt in enumerate(date_range):
         day_data = df_evo[df_evo['datetime'] == dt]
@@ -114,16 +127,19 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
             idx = np.abs(day_data['layer_top'].values - depth_center).argmin()
             Z[j, i] = day_data[var].iloc[idx]
     
-    # Plot
+    # Plot with correct dimensions
+    # x_edges: (len(date_range)+1,), depth_edges: (21,), Z: (20, len(date_range))
     cmap = plt.cm.get_cmap('RdYlBu_r')
-    im = ax.pcolormesh(x, depth_edges, Z, cmap=cmap, shading='flat', vmin=0, vmax=1)
+    im = ax.pcolormesh(x_edges, depth_edges, Z, cmap=cmap, shading='flat', vmin=0, vmax=1)
     
     if colorbar:
         plt.colorbar(im, ax=ax, label=var)
     
-    # Set x-axis labels
-    ax.set_xticks(np.arange(0, len(date_range), max(1, len(date_range) // 10)))
-    ax.set_xticklabels([date_range[i].strftime('%Y-%m-%d') for i in ax.get_xticks() if i < len(date_range)], rotation=45)
+    # Set x-axis labels - use x_centers for tick positions
+    num_ticks = min(10, len(date_range))
+    tick_indices = np.linspace(0, len(x_centers) - 1, num_ticks, dtype=int)
+    ax.set_xticks(x_centers[tick_indices])
+    ax.set_xticklabels([date_range[i].strftime('%Y-%m-%d') for i in tick_indices], rotation=45)
     
     ax.set_ylabel('Snow depth [cm]')
     ax.invert_yaxis()
