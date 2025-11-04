@@ -1,10 +1,23 @@
 # SNOWPACKforPatrollers
 
-A Google Colab notebook for running the SNOWPACK snow cover model to support avalanche forecasting and snowpack analysis. Designed specifically for those who want to run snowpack simulations without terminal commands or coding experience.
+This repository is to help get more people running the SNOWPACK model and getting tools used in snow instability modeling used by those without extensive coding backgrounds. This idea developed out of the growing gap from finishing the highest level of avalanche professional education in the United States (Pro2) and the tools that large avalanche forecasting centers are currently using. The goal of this is to get more people using the tools and techniques that high level forecasting and research are using currently. 
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Austfi/SNOWPACKforPatrollers/blob/main/SNOWPACKforPatrollers.ipynb)
 
 ---
+<img width="350" height="350" alt="image" src="https://github.com/user-attachments/assets/bf34d4b6-4378-43e3-82aa-6e65556023e2" />
+
+## Notebooks
+
+This repository contains three main notebooks:
+
+1. **`SNOWPACKforPatrollers.ipynb`** — Main notebook for running SNOWPACK simulations
+2. **`Snowprofile_Colab_Tutorial.ipynb`** — Tutorial for reading, plotting, and analyzing CAAML v6 snow profile files
+3. **`RF_Instability.ipynb`** — Random Forest snow instability analysis using SNOWPACK PRO files
+
+---
+
+## SNOWPACKforPatrollers.ipynb
 
 This notebook automates the entire workflow of:
 1. **Installing and compiling** SNOWPACK and MeteoIO from source
@@ -68,6 +81,35 @@ Executes the compiled `snowpack` binary with your configuration.
 
 ---
 
+## Snowprofile_Colab_Tutorial.ipynb
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Austfi/SNOWPACKforPatrollers/blob/dev/Snowprofile_Colab_Tutorial.ipynb)
+
+Tutorial for working with CAAML v6 snow profile files using the [`snowprofile`](https://snowprofile.readthedocs.io/en/latest/) Python package. Teaches you how to:
+- Load and read CAAML files
+- Explore snow profile data (stratigraphy, temperature, density profiles)
+- Analyze temperature gradients
+- Create visualizations
+
+**Use case**: Process and visualize snow profile data from field observations or SNOWPACK outputs.
+
+---
+
+## RF_Instability.ipynb
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Austfi/SNOWPACKforPatrollers/blob/dev/RF_Instability.ipynb)
+
+Random Forest snow instability analysis using SNOWPACK PRO files. Features:
+- **Single profile analysis**: Analyze instability probabilities for a specific timestamp
+- **Seasonal evolution**: Track instability probabilities over time
+- **CSV export**: Export daily instability metrics for further analysis
+
+Automatically downloads and selects the best RF model version for your Python environment. Based on the [WSL/SLF Random Forest Snow Instability Model](https://git.wsl.ch/mayers/random_forest_snow_instability_model.git) (WSL Institute for Snow and Avalanche Research SLF).
+
+**Use case**: Analyze SNOWPACK simulation outputs to assess snowpack instability probabilities.
+
+---
+
 ## File Structure
 
 ## Folders 
@@ -98,59 +140,6 @@ Each virtual slope generates its own `.pro` file:
 
 ---
 
-## Repository Management
-
-This repository uses best practices for managing Jupyter notebooks in git:
-
-### Automatic Output Stripping
-
-Notebook outputs are automatically stripped before commits using `nbstripout`. This keeps the repository clean and avoids merge conflicts.
-
-**Setup** (one-time):
-```bash
-pip install nbstripout
-nbstripout --install
-```
-
-Or use the setup script:
-```bash
-./setup_git.sh
-```
-
-**Manual stripping** (if needed):
-```bash
-nbstripout SNOWPACKforPatrollers.ipynb
-```
-
-### File Organization
-
-- **`.gitignore`**: Excludes outputs, temporary files, and OS-specific files
-- **`.gitattributes`**: Configures automatic notebook output stripping
-- **`.nbstripout.json`**: Configures which metadata to preserve
-
-### Contributing
-
-When contributing to this repository:
-
-1. **Before committing**: Notebook outputs are automatically stripped
-2. **Test locally**: Ensure notebooks run without errors
-3. **Keep outputs out**: Never commit notebook outputs manually
-4. **Update documentation**: Keep README current if making significant changes
-
-### Cleaning Notebooks
-
-To manually clean notebook outputs:
-
-```bash
-# Clean a specific notebook
-nbstripout SNOWPACKforPatrollers.ipynb
-
-# Clean all notebooks
-find . -name "*.ipynb" -exec nbstripout {} \;
-```
-
----
-
 ## Dependencies & Licenses
 
 This project uses the following open-source software and data sources:
@@ -171,6 +160,16 @@ This project uses the following open-source software and data sources:
   License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)  
   Attribution: "Weather data by Open-Meteo.com"  
   Note: Open-Meteo aggregates data from national weather services (NOAA, DWD, ECMWF, etc.)
+
+### Additional Tools
+
+- **[snowprofile](https://snowprofile.readthedocs.io/en/latest/)** — Python package for reading, analyzing, and visualizing CAAML snow profile files  
+  Used in: `Snowprofile_Colab_Tutorial.ipynb`
+
+- **[Random Forest Snow Instability Model](https://git.wsl.ch/mayers/random_forest_snow_instability_model.git)** — Machine learning model for assessing snowpack instability  
+  Authors: mayers, fherla (WSL Institute for Snow and Avalanche Research SLF)  
+  Used in: `RF_Instability.ipynb`
+
 ---
 
 ## Links
@@ -179,6 +178,7 @@ This project uses the following open-source software and data sources:
 - [SNOWPACK GitHub Repository](https://github.com/snowpack-model/snowpack)
 - [niViz Online Visualizer](https://run.niviz.org)
 - [MeteoIO Documentation](https://models.slf.ch/p/meteoio/)
+- [snowprofile Documentation](https://snowprofile.readthedocs.io/en/latest/)
 - [Open-Meteo API](https://open-meteo.com/)
 
 ---
