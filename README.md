@@ -1,10 +1,11 @@
 # SNOWPACKforPatrollers
 
-A Google Colab notebook for running the SNOWPACK snow cover model to support avalanche forecasting and snowpack analysis. Designed specifically for those who want to run snowpack simulations without terminal commands or coding experience.
+This repository is to help get more people running the SNOWPACK model and getting tools used in snow instability modeling used by those without extensive coding backgrounds. This idea developed out of the growing gap from finishing the highest level of avalanche professional education in the United States (Pro2) and the tools that large avalanche forecasting centers are currently using. The goal of this is to get more people using the tools and techniques that high level forecasting and research are using currently. 
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Austfi/SNOWPACKforPatrollers/blob/main/SNOWPACKforPatrollers.ipynb)
 
 ---
+<img width="350" height="350" alt="image" src="https://github.com/user-attachments/assets/bf34d4b6-4378-43e3-82aa-6e65556023e2" />
 
 ## Notebooks
 
@@ -136,59 +137,6 @@ Each virtual slope generates its own `.pro` file:
 2. Drag any `.pro` file into the browser window
 3. Use the timeline slider to step through dates
 4. Compare different aspects side-by-side
-
----
-
-## Repository Management
-
-This repository uses best practices for managing Jupyter notebooks in git:
-
-### Automatic Output Stripping
-
-Notebook outputs are automatically stripped before commits using `nbstripout`. This keeps the repository clean and avoids merge conflicts.
-
-**Setup** (one-time):
-```bash
-pip install nbstripout
-nbstripout --install
-```
-
-Or use the setup script:
-```bash
-./setup_git.sh
-```
-
-**Manual stripping** (if needed):
-```bash
-nbstripout SNOWPACKforPatrollers.ipynb
-```
-
-### File Organization
-
-- **`.gitignore`**: Excludes outputs, temporary files, and OS-specific files
-- **`.gitattributes`**: Configures automatic notebook output stripping
-- **`.nbstripout.json`**: Configures which metadata to preserve
-
-### Contributing
-
-When contributing to this repository:
-
-1. **Before committing**: Notebook outputs are automatically stripped
-2. **Test locally**: Ensure notebooks run without errors
-3. **Keep outputs out**: Never commit notebook outputs manually
-4. **Update documentation**: Keep README current if making significant changes
-
-### Cleaning Notebooks
-
-To manually clean notebook outputs:
-
-```bash
-# Clean a specific notebook
-nbstripout SNOWPACKforPatrollers.ipynb
-
-# Clean all notebooks
-find . -name "*.ipynb" -exec nbstripout {} \;
-```
 
 ---
 
