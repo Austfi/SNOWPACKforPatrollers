@@ -105,7 +105,8 @@ def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
         cmapc = mpl.colors.ListedColormap(cmapcolorbar)
         bounds = np.arange(len(cmapcolorbar) + 1)
         norm = mpl.colors.BoundaryNorm(bounds, cmapc.N)
-        ticks = bounds + 0.5
+        # Create ticks at midpoints: [0.5, 1.5, 2.5, ..., 7.5] (8 ticks for 8 labels)
+        ticks = np.arange(len(cmapcolorbar)) + 0.5
         cb1 = mpl.colorbar.ColorbarBase(axcolor, cmap=cmapc, norm=norm, ticks=ticks, 
                                         orientation='vertical', label='grain type')
         cb1.ax.set_yticklabels(ticklabels)
@@ -201,8 +202,9 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
         if var == 'graintype':
             cgt_no_rf = ['greenyellow', 'darkgreen', 'pink', 'lightblue', 'blue', 'magenta', 'red', 'cyan']
             cmapc = mcolors.ListedColormap(np.array(cgt_no_rf))
-            ticks = np.arange(9)
-            norm = mpl.colors.BoundaryNorm(ticks + 0.5, cmapc.N)
+            # Create 8 ticks for 8 grain types at midpoints
+            ticks = np.arange(8) + 0.5
+            norm = mpl.colors.BoundaryNorm(np.arange(9), cmapc.N)
             cbar = mpl.colorbar.ColorbarBase(axcolor, cmap=cmapc, norm=norm, ticks=ticks,
                                             orientation='vertical')
             cbar.set_ticklabels(['PP', 'DF', 'RG', 'FC', 'DH', 'SH', 'MF(cr)', 'IF'])
