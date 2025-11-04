@@ -25,26 +25,35 @@ def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
     if var not in df_prof.columns:
         raise ValueError(f"Variable '{var}' not found in DataFrame")
     
-    # Get depth values
+    # Get depth values (layer tops)
     depth = df_prof['layer_top'].values
     values = df_prof[var].values
     
     # Create depth edges for pcolormesh
+    # For N layers, we need N+1 edges: [0, depth[0], depth[1], ..., depth[N-1]]
     if len(depth) > 1:
         depth_edges = np.concatenate([[0], depth])
     else:
         depth_edges = np.array([0, depth[0] if len(depth) > 0 else 1])
     
-    # Create mesh for pcolormesh
-    x = np.array([0, 1])
-    depth_mesh = np.tile(depth_edges.reshape(-1, 1), (1, 2))
-    values_mesh = np.tile(values.reshape(-1, 1), (1, 2))
+    # For pcolormesh with shading='flat':
+    # - X edges: shape (M,) where M = number of X edges
+    # - Y edges: shape (N,) where N = number of Y edges  
+    # - C values: shape (N-1, M-1) where C[i,j] is the value for the cell between edges [i:i+1, j:j+1]
+    
+    # Create X edges: [0, 1] for a single column plot
+    x_edges = np.array([0, 1])
+    
+    # Create C array: shape (len(depth_edges)-1, len(x_edges)-1) = (N, 1)
+    # Each row represents one depth layer
+    C = values.reshape(-1, 1)  # Shape: (N, 1)
     
     # Set colormap
     cmap = plt.cm.get_cmap('RdYlBu_r')
     
-    # Plot
-    im = ax.pcolormesh(x, depth_mesh, values_mesh, cmap=cmap, shading='flat', vmin=0, vmax=1)
+    # Plot with correct dimensions
+    # x_edges: (2,), depth_edges: (N+1,), C: (N, 1)
+    im = ax.pcolormesh(x_edges, depth_edges, C, cmap=cmap, shading='flat', vmin=0, vmax=1)
     
     if colorbar:
         plt.colorbar(im, ax=ax, label=var)
