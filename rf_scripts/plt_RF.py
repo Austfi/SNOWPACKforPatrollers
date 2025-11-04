@@ -98,8 +98,13 @@ def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
     
     # Grain type colorbar
     if colorbar:
+        # Adjust subplot to make room for colorbar
+        plt.subplots_adjust(bottom=0.1, right=0.82, top=0.9)
         ax_pos = np.array(ax.get_position())
-        axcolor = fig.add_axes([0.85, ax_pos[0, 1], 0.02, ax_pos[1, 1] - ax_pos[0, 1]])
+        # Position colorbar adjacent to plot (right edge of plot + small gap)
+        colorbar_x = ax_pos[1, 0] + 0.02  # Just to the right of plot
+        colorbar_width = 0.02
+        axcolor = fig.add_axes([colorbar_x, ax_pos[0, 1], colorbar_width, ax_pos[1, 1] - ax_pos[0, 1]])
         cmapcolorbar = ['greenyellow', 'darkgreen', 'pink', 'lightblue', 'blue', 'magenta', 'red', 'cyan']
         ticklabels = ['PP', 'DF', 'RG', 'FC', 'DH', 'SH', 'MF', 'IF']
         cmapc = mpl.colors.ListedColormap(cmapcolorbar)
@@ -110,7 +115,6 @@ def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
         cb1 = mpl.colorbar.ColorbarBase(axcolor, cmap=cmapc, norm=norm, ticks=ticks, 
                                         orientation='vertical', label='grain type')
         cb1.ax.set_yticklabels(ticklabels)
-        plt.subplots_adjust(bottom=0.1, right=0.8, top=0.9)
     
     return ax11
 
@@ -206,8 +210,13 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
     
     # Colorbar
     if colorbar:
+        # Adjust subplot to make room for colorbar
+        plt.subplots_adjust(bottom=0.15, right=0.85, top=0.9)
         ax_pos = np.array(ax.get_position())
-        axcolor = fig.add_axes([0.9, ax_pos[0, 1], 0.02, ax_pos[1, 1] - ax_pos[0, 1]])
+        # Position colorbar adjacent to plot (right edge of plot + small gap)
+        colorbar_x = ax_pos[1, 0] + 0.02  # Just to the right of plot
+        colorbar_width = 0.02
+        axcolor = fig.add_axes([colorbar_x, ax_pos[0, 1], colorbar_width, ax_pos[1, 1] - ax_pos[0, 1]])
         
         if var == 'graintype':
             cgt_no_rf = ['greenyellow', 'darkgreen', 'pink', 'lightblue', 'blue', 'magenta', 'red', 'cyan']
