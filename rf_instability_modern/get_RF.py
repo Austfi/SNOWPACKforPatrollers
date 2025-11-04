@@ -1,6 +1,15 @@
 """
 Wrapper module for RF instability analysis using pyunstable.
-Provides create_RFprof() function compatible with existing notebook code.
+
+This module provides compatibility with the original RF instability model API
+from the WSL/SLF repository:
+https://git.wsl.ch/mayers/random_forest_snow_instability_model.git
+
+Original code by: mayers, fherla (WSL Institute for Snow and Avalanche Research SLF)
+
+The underlying functions (comp_features, comp_rf_probability) are from pyunstable.py,
+which contains the original implementation. This wrapper provides the create_RFprof()
+function for compatibility with existing notebook workflows.
 """
 import pandas as pd
 import numpy as np
@@ -33,4 +42,34 @@ def create_RFprof(prof, slopeangle, model):
         features['layer_top'] = prof['height']
     
     return features
+
+
+# Expose original function names for direct API compatibility
+# These match the original getRF module API from the WSL/SLF repository
+def comp_features(prof, slopeangle):
+    """
+    Compute features for RF model (original API compatibility).
+    
+    Args:
+        prof: Profile dictionary from readProfile.read_profile()
+        slopeangle: Slope angle in degrees
+    
+    Returns:
+        DataFrame with features: ['viscdefrate', 'rcflat', 'sphericity', 'grainsize', 'penetrationdepth', 'slab_rhogs']
+    """
+    return pyunstable.comp_features(prof, slopeangle)
+
+
+def comp_rf_probability(features, model):
+    """
+    Compute RF instability probability (original API compatibility).
+    
+    Args:
+        features: DataFrame with features from comp_features()
+        model: Random Forest model (loaded with joblib)
+    
+    Returns:
+        Array of P_unstable values
+    """
+    return pyunstable.comp_rf_probability(features, model)
 

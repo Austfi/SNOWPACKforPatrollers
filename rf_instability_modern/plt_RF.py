@@ -1,6 +1,15 @@
 """
 Plotting functions for RF instability analysis.
-Provides plotting functions compatible with existing notebook code.
+
+This module provides plotting functions compatible with the original RF instability model
+workflow from the WSL/SLF repository:
+https://git.wsl.ch/mayers/random_forest_snow_instability_model.git
+
+Original model by: mayers, fherla (WSL Institute for Snow and Avalanche Research SLF)
+
+Functions:
+- plot_sp_single_P0: Plot single profile with P_unstable
+- plot_evo_SP: Plot seasonal evolution of P_unstable over time
 """
 import matplotlib.pyplot as plt
 import matplotlib as mpl
