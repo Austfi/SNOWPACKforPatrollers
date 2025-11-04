@@ -6,6 +6,18 @@ A Google Colab notebook for running the SNOWPACK snow cover model to support ava
 
 ---
 
+## Notebooks
+
+This repository contains three main notebooks:
+
+1. **`SNOWPACKforPatrollers.ipynb`** — Main notebook for running SNOWPACK simulations
+2. **`Snowprofile_Colab_Tutorial.ipynb`** — Tutorial for reading, plotting, and analyzing CAAML v6 snow profile files
+3. **`RF_Instability.ipynb`** — Random Forest snow instability analysis using SNOWPACK PRO files
+
+---
+
+## SNOWPACKforPatrollers.ipynb
+
 This notebook automates the entire workflow of:
 1. **Installing and compiling** SNOWPACK and MeteoIO from source
 2. **Fetching historical weather data** from multiple forecast models
@@ -65,6 +77,35 @@ Executes the compiled `snowpack` binary with your configuration.
 - Packages them into `snowpack_profiles.zip`
 - Automatic download of .zip file begins
 - Provides instructions for opening in [niViz](https://run.niviz.org)
+
+---
+
+## Snowprofile_Colab_Tutorial.ipynb
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Austfi/SNOWPACKforPatrollers/blob/dev/Snowprofile_Colab_Tutorial.ipynb)
+
+A tutorial notebook for working with CAAML v6 snow profile files. Teaches you how to:
+- Load and read CAAML files using the `snowprofile` Python package
+- Explore snow profile data (stratigraphy, temperature, density profiles)
+- Analyze temperature gradients
+- Create visualizations of snow profiles
+
+**Use case**: Process and visualize snow profile data from field observations or SNOWPACK outputs.
+
+---
+
+## RF_Instability.ipynb
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Austfi/SNOWPACKforPatrollers/blob/dev/RF_Instability.ipynb)
+
+Random Forest snow instability analysis using SNOWPACK PRO files. Features:
+- **Single profile analysis**: Analyze instability probabilities for a specific timestamp
+- **Seasonal evolution**: Track instability probabilities over time
+- **CSV export**: Export daily instability metrics for further analysis
+
+Automatically downloads and selects the best RF model version for your Python environment. Based on the [WSL/SLF Random Forest Snow Instability Model](https://git.wsl.ch/mayers/random_forest_snow_instability_model.git).
+
+**Use case**: Analyze SNOWPACK simulation outputs to assess snowpack instability probabilities.
 
 ---
 
