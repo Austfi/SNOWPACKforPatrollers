@@ -48,21 +48,27 @@ def plot_sp_single_P0(fig, ax, df_prof, var='P_unstable', colorbar=True):
     # Each row represents one depth layer
     C = values.reshape(-1, 1)  # Shape: (N, 1)
     
-    # Set colormap
-    cmap = plt.cm.get_cmap('RdYlBu_r')
+    # Set colormap - use YlOrRd (Yellow-Orange-Red) for intuitive visualization:
+    # Yellow = low instability (stable), Red = high instability (unstable)
+    cmap = plt.cm.get_cmap('YlOrRd')
     
     # Plot with correct dimensions
     # x_edges: (2,), depth_edges: (N+1,), C: (N, 1)
     im = ax.pcolormesh(x_edges, depth_edges, C, cmap=cmap, shading='flat', vmin=0, vmax=1)
     
     if colorbar:
-        plt.colorbar(im, ax=ax, label=var)
+        cbar = plt.colorbar(im, ax=ax, label=var)
+        cbar.ax.tick_params(labelsize=10)
     
     ax.set_xlim(0, 1)
     ax.set_ylim(0, depth.max() if len(depth) > 0 else 1)
     ax.invert_yaxis()
     ax.set_xlabel('')
     ax.set_xticks([])
+    ax.set_ylabel('Snow depth [m]', fontsize=12)
+    ax.tick_params(labelsize=10)
+    ax.grid(True, alpha=0.3, linestyle='--')
+    ax.set_title('P_unstable Profile', fontsize=13, fontweight='bold')
 
 
 def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, resolution='D'):
@@ -184,7 +190,9 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
     # Z should be (len(depth_index), len(date_range)) which matches!
     
     # Plot with actual datetime values and actual depth values
-    cmap = plt.cm.get_cmap('RdYlBu_r')
+    # Use YlOrRd (Yellow-Orange-Red) for intuitive visualization:
+    # Yellow = low instability (stable), Red = high instability (unstable)
+    cmap = plt.cm.get_cmap('YlOrRd')
     
     # Convert datetime edges to matplotlib date numbers for pcolormesh
     date_edges_num = mpl.dates.date2num(date_edges)
@@ -198,15 +206,18 @@ def plot_evo_SP(df_evo, fig, ax, start, stop, var='P_unstable', colorbar=True, r
     im = ax.pcolormesh(date_edges_num, depth_edges_actual, Z, cmap=cmap, shading='flat', vmin=0, vmax=1)
     
     if colorbar:
-        plt.colorbar(im, ax=ax, label=var)
+        cbar = plt.colorbar(im, ax=ax, label=var)
+        cbar.ax.tick_params(labelsize=10)
     
     # Format x-axis as dates
     ax.xaxis_date()
     fig.autofmt_xdate(rotation=45)
     
-    ax.set_ylabel('Snow depth [m]')
+    ax.set_ylabel('Snow depth [m]', fontsize=12)
+    ax.set_xlabel('Date', fontsize=12)
+    ax.tick_params(labelsize=10)
+    ax.grid(True, alpha=0.3, linestyle='--', which='both')
     ax.invert_yaxis()
-    ax.set_xlabel('Date')
     
     return fig
 
