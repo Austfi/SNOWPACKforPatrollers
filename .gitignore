@@ -45,6 +45,7 @@ env/
 
 # SNOWPACK outputs and temporary files
 *.pro
+!snowprofiles/WFJ2_2017.pro  # Exception: Keep example PRO file for RF notebook
 *.smet
 *.sno
 *.ini
