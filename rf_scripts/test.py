@@ -18,7 +18,7 @@ import time
 import datetime 
 import sys
 sys.path.append(path)
-import getRF
+import get_RF as getRF  # Fixed: import get_RF (module name) as getRF (alias for compatibility)
 import readProfile # function to read .pro file
 
 feature_names = ['viscdefrate', 'rcflat', 'sphericity', 'grainsize', 'penetrationdepth','slab_rhogs']
