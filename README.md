@@ -9,11 +9,12 @@ This repository is to help get more people running the SNOWPACK model and gettin
 
 ## Notebooks
 
-This repository contains three main notebooks:
+This repository contains four main notebooks:
 
 1. **`SNOWPACKforPatrollers.ipynb`** — Main notebook for running SNOWPACK simulations
 2. **`Snowprofile_Colab_Tutorial.ipynb`** — Tutorial for reading, plotting, and analyzing CAAML v6 snow profile files
 3. **`RF_Instability.ipynb`** — Random Forest snow instability analysis using SNOWPACK PRO files
+4. **`HRRR_OpenMeteo_to_SMET.ipynb`** — Download HRRR historical forecast data and convert to SMET format
 
 ---
 
@@ -107,6 +108,20 @@ Random Forest snow instability analysis using SNOWPACK PRO files. Features:
 Automatically downloads and selects the best RF model version for your Python environment. Based on the [WSL/SLF Random Forest Snow Instability Model](https://git.wsl.ch/mayers/random_forest_snow_instability_model.git) (WSL Institute for Snow and Avalanche Research SLF).
 
 **Use case**: Analyze SNOWPACK simulation outputs to assess snowpack instability probabilities.
+
+---
+
+## HRRR_OpenMeteo_to_SMET.ipynb
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Austfi/SNOWPACKforPatrollers/blob/dev/HRRR_OpenMeteo_to_SMET.ipynb)
+
+Downloads HRRR (High-Resolution Rapid Refresh) historical forecast data from the Open-Meteo API and converts it to SMET 1.2 format for use with SNOWPACK. Features:
+- **HRRR data download**: Query historical forecast data for any location
+- **SNODAS integration**: Automatically integrates SNODAS snow depth data when available
+- **SMET conversion**: Converts meteorological data to SMET 1.2 format compatible with SNOWPACK
+- **Data visualization**: Creates plots to visualize the downloaded data
+
+**Use case**: Generate SMET files from HRRR forecast data for SNOWPACK simulations, either as a standalone workflow or as an alternative to the weather data fetching in the main SNOWPACK notebook.
 
 ---
 
