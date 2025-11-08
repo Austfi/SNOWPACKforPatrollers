@@ -58,6 +58,7 @@ snowpack/
 .cache.sqlite
 *-executed.ipynb
 snodas_cache/
+snodas_nc/
 
 # Colab outputs
 /content/
