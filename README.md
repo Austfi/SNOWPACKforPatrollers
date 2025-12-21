@@ -79,6 +79,14 @@ Executes the compiled `snowpack` binary with your configuration.
 - Automatic download of .zip file begins
 - Provides instructions for opening in [niViz](https://run.niviz.org)
 
+### Configuration Reference (`master.ini`)
+
+The repository includes a `master.ini` file which serves as a **professional reference configuration** (based on CAA/CAIC standards). 
+
+> [!NOTE]
+> This file is **not directly used** by the `SNOWPACKforPatrollers.ipynb` notebook. The notebook dynamically generates its own `.ini` file based on the form parameters you select.
+> The `master.ini` file is provided for educational purposes to compare against the notebook-generated configuration.
+
 ---
 
 ## Snowprofile_Colab_Tutorial.ipynb
