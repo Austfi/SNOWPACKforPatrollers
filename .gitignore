@@ -53,6 +53,11 @@ snowpack/
 .cache/
 *.log
 
+# SNODAS outputs and cache
+snodas_cache/
+snodas_nc/
+.cache.sqlite
+
 # Colab outputs
 /content/
 /content/*
