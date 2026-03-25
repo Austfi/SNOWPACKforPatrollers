@@ -2,7 +2,7 @@
 
 This repository is to help get more people running the SNOWPACK model and getting tools used in snow instability modeling used by those without extensive coding backgrounds. This idea developed out of the growing gap from finishing the highest level of avalanche professional education in the United States (Pro2) and the tools that large avalanche forecasting centers are currently using. The goal of this is to get more people using the tools and techniques that high level forecasting and research are using currently. 
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Austfi/SNOWPACKforPatrollers/blob/main/SNOWPACKforPatrollers.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Austfi/SNOWPACKforPatrollers/blob/feature/colab-oneclick/SNOWPACKforPatrollers.ipynb)
 
 ---
 <img width="350" height="350" alt="image" src="https://github.com/user-attachments/assets/bf34d4b6-4378-43e3-82aa-6e65556023e2" />
@@ -20,13 +20,35 @@ This repository contains three main notebooks:
 ## SNOWPACKforPatrollers.ipynb
 
 This notebook automates the entire workflow of:
-1. **Installing and compiling** SNOWPACK and MeteoIO from source
-2. **Fetching historical weather data** from multiple forecast models
+1. **Bootstrapping the runtime** in Colab and installing the pinned SNOWPACK binary package
+2. **Fetching forcing data** through a shared Python package instead of notebook-only logic
 3. **Configuring virtual slopes** (flat, N, E, S, W, or custom aspects)
 4. **Running SNOWPACK simulations** for multiple slope aspects
 5. **Downloading profile outputs** (`.pro` files) to visualize in [niViz](https://run.niviz.org)
 
 All parameters are exposed as form fields.
+
+The notebook is now a thin wrapper around the repo package so the same workflow can be tested locally from the command line.
+In Colab, the core package installs up front and HRRR-specific dependencies are installed on demand only when the selected run resolves to the direct `hrrr` provider.
+The default notebook settings are intentionally short and flat so a first-time user can open the notebook and use `Run all` without editing anything first.
+
+### Forcing Providers
+
+- `auto` — Uses AORC + SNODAS for supported CONUS runs ending on or before `2024-12-31`, then uses direct HRRR for later CONUS runs, otherwise falls back to Open-Meteo
+- `aorc` — Forces the AORC retrospective path
+- `hrrr` — Forces direct HRRR access through Herbie
+- `openmeteo` — Forces the Open-Meteo fallback path
+
+### Local CLI
+
+The repo now includes a local CLI for development and smoke checks:
+
+```bash
+python -m snowpack_patrollers.cli smoke --skip-model
+python -m snowpack_patrollers.cli generate-config --station-id demo
+python -m snowpack_patrollers.cli fetch-forcing --forcing-provider auto
+python -m snowpack_patrollers.cli run-model --workdir .snowpack_work --station-id demo
+```
 
 ---
 
@@ -34,22 +56,21 @@ All parameters are exposed as form fields.
 
 ### Step 1: Environment Setup 
 Run these cells once per session:
-- Install system packages (6 minutes for MeteoIO, 2 minutes for SNOWPACK)
-- Download and compile SNOWPACK/MeteoIO
-- Set up paths
-- Establishes a runtime and file structure to run SNOWPACK 
+- In Colab: clone the repo, install the Python package, and install the pinned SNOWPACK binary package
+- In Colab: enable the custom widget manager so the location picker works reliably
+- In Colab: install `herbie-data`, `cfgrib`, and `eccodes` only when the effective forcing provider is `hrrr`
+- Locally: load the repo package from the current checkout and use an already-installed `snowpack` binary
+- Establish a reusable work directory for `input/`, `config/`, and `config/output/`
 
 ### Step 2: Generate Configuration Files 
 **Configurable parameters:**
 - `station_id` — Unique identifier for your location
 - `station_name` — Human-readable name
-- `latitude`, `longitude`, `altitude` — Site coordinates
-- `profile_date` — Start date for simulation (ISO format: `YYYY-MM-DDTHH:MM:SS`)
-  - This will be the date SNOWPACK simulation starts from
+- `latitude`, `longitude` — Site coordinates chosen from the map or optional manual override fields
+- `altitude` — Auto-fetched from the site picker with an optional manual override field
 - `num_slopes`, `default_slope_angle` — Number and steepness of virtual slopes
 - `north_slope`, `east_slope`, `south_slope`, `west_slope` — Toggle cardinal aspects
 - `custom_directions` — Comma-separated azimuth angles (e.g., `45,135,225,315`)
-- `snowpack_end_date_input` - Chooses the end of the simulation
 - Adding more form based options for selecting .ini and .sno files.
 - Current structure is to start from a no snow on the ground profile. Initial .sno profile starts from zero snow layers. 
 
@@ -60,7 +81,8 @@ Run these cells once per session:
 - `latitude`, `longitude`, `altitude` — Location (should match Step 2)
 - `station_name` — Station identifier
 - `start_date`, `end_date` — Simulation period (format: `YYYY-MM-DD`)
-- `model_selection` — Weather model
+- `forcing_provider` — `auto`, `aorc`, `hrrr`, or `openmeteo`
+- `openmeteo_model` — Open-Meteo model choice when the fallback path is used
 - Time period for this should cover and extend over the end date choosen for the simulation.
 
 **Output:** Generates `.smet` file with hourly meteorological forcing data.
@@ -120,15 +142,12 @@ Automatically downloads and selects the best RF model version for your Python en
 
 ## File Structure
 
-## Folders 
-content/                        # Default folder in Google Colab for files viewing upon opening a runtime
-├── input/                      # Folder created to store .sno files and .smet files
-  ├── $CREATEDFILE.sno          # Created .sno files for virtual slopes will be here. The will have a $FILE1.sno, $FILE2... naming.
-  └── $CREATEDFILE.smet         # .smet file created from historic weather forecast
-├── config/                     # Holds .ini file and output folder
-  ├── $CREATEDFILE.ini          # Created .ini file for the SNOWPACK run
-  └── output/                   # Holds the .pro, .haz, .smet, and other output files that are options in the .ini file structure
-    └── $CREATEDFILE.pro        # Created .pro files from SNOWPACK runs that are the snowprofile time series plots for NiViz
+## Folders
+`.snowpack_work/`               # Default local work directory used by the notebook and CLI
+├── `input/`                    # Generated `.sno` and `.smet` files
+├── `config/`                   # Generated `.ini`
+│   └── `output/`               # SNOWPACK outputs such as `.pro`
+└── `snowpack_profiles.zip`     # Bundled profile outputs when available
     
 ## Output Files
 
@@ -162,12 +181,12 @@ This project uses the following open-source software and data sources:
   License: [LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html)  
   Copyright: WSL Institute for Snow and Avalanche Research SLF
 
-### Weather Data Source
+### Weather Data Sources
 
-- **[Open-Meteo API](https://open-meteo.com/)** — Historical weather data  
-  License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)  
-  Attribution: "Weather data by Open-Meteo.com"  
-  Note: Open-Meteo aggregates data from national weather services (NOAA, DWD, ECMWF, etc.)
+- **[NOAA AORC](https://registry.opendata.aws/noaa-nws-aorc/)** — Retrospective CONUS forcing used by the `aorc` path
+- **[NOAA HRRR](https://registry.opendata.aws/noaa-hrrr-pds/)** — Direct CONUS forecast forcing used by the `hrrr` path
+- **[SNODAS](https://nsidc.org/data/g02158)** — Daily snow depth enrichment used for HS
+- **[Open-Meteo API](https://open-meteo.com/)** — Transitional fallback for unsupported dates or locations
 
 ### Additional Tools
 
@@ -190,4 +209,3 @@ This project uses the following open-source software and data sources:
 - [Open-Meteo API](https://open-meteo.com/)
 
 ---
-

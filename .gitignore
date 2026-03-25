@@ -49,6 +49,7 @@ env/
 *.sno
 *.ini
 *.zip
+.snowpack_work/
 snowpack/
 .cache/
 *.log
@@ -80,4 +81,3 @@ snodas_nc/
 # Environment variables
 .env
 .env.local
-
