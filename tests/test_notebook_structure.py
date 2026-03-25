@@ -17,3 +17,5 @@ def test_main_notebook_is_package_backed():
     assert 'north_slope = False' in combined
     assert 'sys.path.insert(0, str(repo_dir))' in combined
     assert '"-e"' not in combined
+    assert 'NOTEBOOK_BRANCH = "feature/colab-oneclick"' in combined
+    assert '"--branch"' in combined
