@@ -15,3 +15,5 @@ def test_main_notebook_is_package_backed():
     assert "enable_custom_widget_manager" in combined
     assert "num_slopes = 1" in combined
     assert 'north_slope = False' in combined
+    assert 'sys.path.insert(0, str(repo_dir))' in combined
+    assert '"-e"' not in combined
