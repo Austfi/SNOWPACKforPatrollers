@@ -4,6 +4,8 @@ from pathlib import Path
 
 from .models import ConfigArtifacts, SiteConfig, SlopeConfig, SnowpackConfig, WorkspacePaths
 
+VALID_REDISTRIBUTION_SLOPE_COUNTS = {3, 5, 7, 9}
+
 
 def to_meters(value: float, unit: str) -> float:
     unit_normalized = unit.lower()
@@ -16,6 +18,14 @@ def to_meters(value: float, unit: str) -> float:
 
 def _as_ini_bool(value: bool) -> str:
     return str(bool(value)).lower()
+
+
+def _effective_snow_redistribution(snowpack: SnowpackConfig, slope_count: int) -> bool:
+    return snowpack.snow_redistribution and slope_count in VALID_REDISTRIBUTION_SLOPE_COUNTS
+
+
+def _effective_psum_accumulate_period(snowpack: SnowpackConfig) -> int:
+    return int(round(snowpack.calculation_step_length * 60))
 
 
 def generate_slopes(config: SlopeConfig) -> list[tuple[float, float]]:
@@ -97,6 +107,10 @@ def create_ini_content(
     snowfiles: list[str],
     snowpack: SnowpackConfig,
 ) -> str:
+    slope_count = len(snowfiles)
+    effective_snow_redistribution = _effective_snow_redistribution(snowpack, slope_count)
+    effective_psum_accumulate_period = _effective_psum_accumulate_period(snowpack)
+
     return f"""[General]
 BUFFER_SIZE = {snowpack.buffer_size}
 BUFF_BEFORE = {snowpack.buff_before}
@@ -149,8 +163,8 @@ CANOPY = false
 [SnowpackAdvanced]
 FIXED_POSITIONS = 0.25 0.5 1.0 -0.25 -0.10
 WIND_SCALING_FACTOR = 1.0
-NUMBER_SLOPES = {len(snowfiles)}
-SNOW_REDISTRIBUTION = {str(bool(snowpack.snow_redistribution)).upper()}
+NUMBER_SLOPES = {slope_count}
+SNOW_REDISTRIBUTION = {str(effective_snow_redistribution).upper()}
 THRESH_RAIN = 1.4
 T_CRAZY_MIN = 140
 T_CRAZY_MAX = 360
@@ -213,7 +227,7 @@ VW::arg2::max = 50.0
 [Interpolations1D]
 MAX_GAP_SIZE = {snowpack.max_gap_size}
 PSUM::resample1 = accumulate
-PSUM::ACCUMULATE::PERIOD = {snowpack.psum_accumulate_period}
+PSUM::ACCUMULATE::PERIOD = {effective_psum_accumulate_period}
 HS::resample1 = linear
 HS::LINEAR::MAX_GAP_SIZE = {snowpack.hs_linear_max_gap_size}
 VW::resample1 = linear

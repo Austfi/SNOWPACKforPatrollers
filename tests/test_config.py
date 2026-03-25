@@ -30,7 +30,7 @@ def test_generate_config_files_writes_expected_ini(tmp_path):
     assert "ATMOSPHERIC_STABILITY = MO_MICHLMAYR" in ini_text
     assert "MEAS_INCOMING_LONGWAVE = true" in ini_text
     assert "SNOW_REDISTRIBUTION = TRUE" in ini_text
-    assert "PSUM::ACCUMULATE::PERIOD = 900" in ini_text
+    assert "PSUM::ACCUMULATE::PERIOD = 1800" in ini_text
     assert "HS::LINEAR::MAX_GAP_SIZE = 43200" in ini_text
     assert "VW::resample1 = linear" in ini_text
     assert len(artifacts.sno_paths) == 5
@@ -55,6 +55,35 @@ def test_generate_config_files_uses_station_id_for_flat_slope(tmp_path):
 
     names = [path.name for path in artifacts.sno_paths]
     assert names == ["watrous.sno", "watrous1.sno"]
+
+
+def test_generate_config_files_disables_redistribution_for_single_slope(tmp_path):
+    workspace = create_workspace(tmp_path / "work")
+    site = SiteConfig(
+        station_id="flatdemo",
+        station_name="Flat Demo",
+        latitude=39.7,
+        longitude=-105.8,
+        altitude_meters=3200.0,
+    )
+    slopes = SlopeConfig(
+        num_slopes=1,
+        include_flat=True,
+        north_slope=False,
+        east_slope=False,
+        south_slope=False,
+        west_slope=False,
+    )
+    snowpack = SnowpackConfig(
+        profile_date="2024-11-01T00:00:00",
+        snowpack_end_date="2025-04-01T00:00",
+    )
+
+    artifacts = generate_config_files(site=site, slopes=slopes, snowpack=snowpack, workspace=workspace)
+
+    ini_text = artifacts.ini_path.read_text()
+    assert "NUMBER_SLOPES = 1" in ini_text
+    assert "SNOW_REDISTRIBUTION = FALSE" in ini_text
 
 
 def test_generate_config_files_requires_at_least_one_slope(tmp_path):

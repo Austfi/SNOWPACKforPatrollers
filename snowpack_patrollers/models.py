@@ -42,11 +42,11 @@ class SnowpackConfig:
     snow_erosion: bool = True
     snow_redistribution: bool = True
     roughness_length: float = 0.002
-    calculation_step_length: float = 15.0
+    calculation_step_length: float = 30.0
     height_of_wind_value: float = 10.0
     height_of_meteo_values: float = 2.0
     meas_incoming_longwave: bool = False
-    psum_accumulate_period: int = 900
+    psum_accumulate_period: int = 1800
     max_gap_size: int = 86400
     hs_linear_max_gap_size: int = 43200
     buffer_size: int = 370
