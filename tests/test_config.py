@@ -29,8 +29,9 @@ def test_generate_config_files_writes_expected_ini(tmp_path):
     assert "BUFF_BEFORE = 1.5" in ini_text
     assert "ATMOSPHERIC_STABILITY = MO_MICHLMAYR" in ini_text
     assert "MEAS_INCOMING_LONGWAVE = true" in ini_text
-    assert "SNOW_EROSION = true" in ini_text
-    assert "SNOW_REDISTRIBUTION = true" in ini_text
+    assert "SNOW_REDISTRIBUTION = TRUE" in ini_text
+    assert "PSUM::ACCUMULATE::PERIOD = 900" in ini_text
+    assert "HS::LINEAR::MAX_GAP_SIZE = 43200" in ini_text
     assert "VW::resample1 = linear" in ini_text
     assert len(artifacts.sno_paths) == 5
 

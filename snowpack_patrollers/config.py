@@ -147,13 +147,13 @@ GEO_HEAT = 0.06
 CANOPY = false
 
 [SnowpackAdvanced]
-THRESH_RAIN = 1.4
-SSI_IS_RTA = TRUE
 FIXED_POSITIONS = 0.25 0.5 1.0 -0.25 -0.10
-SNOW_EROSION = {_as_ini_bool(snowpack.snow_erosion)}
 WIND_SCALING_FACTOR = 1.0
 NUMBER_SLOPES = {len(snowfiles)}
-SNOW_REDISTRIBUTION = {_as_ini_bool(snowpack.snow_redistribution)}
+SNOW_REDISTRIBUTION = {str(bool(snowpack.snow_redistribution)).upper()}
+THRESH_RAIN = 1.4
+T_CRAZY_MIN = 140
+T_CRAZY_MAX = 360
 
 [Filters]
 ENABLE_METEO_FILTERS = true
@@ -213,17 +213,15 @@ VW::arg2::max = 50.0
 [Interpolations1D]
 MAX_GAP_SIZE = {snowpack.max_gap_size}
 PSUM::resample1 = accumulate
-PSUM::ARG1::period = {snowpack.psum_accumulate_period}
+PSUM::ACCUMULATE::PERIOD = {snowpack.psum_accumulate_period}
 HS::resample1 = linear
-HS::ARG1::MAX_GAP_SIZE = {snowpack.hs_linear_max_gap_size}
-VW::resample1 = {snowpack.vw_resample}
-VW::ARG1::extrapolate = true
-DW::resample1 = {snowpack.dw_resample}
-DW::ARG1::extrapolate = true
-ILWR::RESAMPLE1 = LINEAR
-ISWR::RESAMPLE1 = LINEAR
-RH::RESAMPLE1 = LINEAR
-TA::RESAMPLE1 = LINEAR
+HS::LINEAR::MAX_GAP_SIZE = {snowpack.hs_linear_max_gap_size}
+VW::resample1 = linear
+DW::resample1 = linear
+ILWR::RESAMPLE1=LINEAR
+ISWR::RESAMPLE1=LINEAR
+RH::RESAMPLE1=LINEAR
+TA::RESAMPLE1=LINEAR
 
 [Generators]
 ILWR::generator1 = AllSky_LW

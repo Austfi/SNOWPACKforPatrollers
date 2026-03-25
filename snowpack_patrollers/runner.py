@@ -26,13 +26,21 @@ def run_snowpack(
         raise FileNotFoundError(f"Configuration file not found: {ini_file}")
 
     executable = find_snowpack_executable(snowpack_executable)
-    result = subprocess.run(
-        [executable, "-c", str(ini_file), "-e", end_date],
-        cwd=str(ini_file.parent),
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            [executable, "-c", str(ini_file), "-e", end_date],
+            cwd=str(ini_file.parent),
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        details: list[str] = [f"SNOWPACK failed with exit code {exc.returncode}."]
+        if exc.stderr and exc.stderr.strip():
+            details.append(f"SNOWPACK STDERR:\n{exc.stderr.strip()}")
+        if exc.stdout and exc.stdout.strip():
+            details.append(f"SNOWPACK STDOUT:\n{exc.stdout.strip()}")
+        raise RuntimeError("\n\n".join(details)) from exc
     return result.stdout
 
 
