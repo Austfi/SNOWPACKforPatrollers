@@ -46,7 +46,12 @@ def run_snowpack(
 
 def bundle_profiles(output_dir: str | Path, bundle_path: str | Path) -> tuple[list[Path], Path | None]:
     output_path = Path(output_dir)
-    profile_files = sorted(output_path.glob("*.pro"))
+    search_root = output_path.parent if output_path.name == "output" else output_path
+    profile_files = sorted(
+        path
+        for path in search_root.rglob("*")
+        if path.is_file() and path.suffix.lower() == ".pro"
+    )
     if not profile_files:
         return [], None
 

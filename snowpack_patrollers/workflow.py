@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from dataclasses import replace
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from .runner import bundle_profiles, run_snowpack
 from .smet import create_smet_from_weather_data
 
 DEFAULT_WORKDIR = ".snowpack_work"
+DEFAULT_FORCING_BUFFER_HOURS = 48
 
 
 def create_workspace(root: str | Path | None = None) -> WorkspacePaths:
@@ -33,6 +35,12 @@ def create_workspace(root: str | Path | None = None) -> WorkspacePaths:
     )
 
 
+def get_buffered_start_date(start_date: str, buffer_hours: int = DEFAULT_FORCING_BUFFER_HOURS) -> str:
+    start_dt = datetime.fromisoformat(start_date)
+    buffered = start_dt - timedelta(hours=buffer_hours)
+    return buffered.date().isoformat()
+
+
 def run_full_workflow(
     *,
     site: SiteConfig,
@@ -49,6 +57,10 @@ def run_full_workflow(
         snowpack,
         meas_incoming_longwave=snowpack.meas_incoming_longwave or provider_supplies_measured_longwave(provider),
     )
+    buffered_forcing_request = replace(
+        forcing_request,
+        start_date=get_buffered_start_date(forcing_request.start_date),
+    )
 
     config_artifacts = generate_config_files(
         site=site,
@@ -58,7 +70,7 @@ def run_full_workflow(
     )
 
     forcing_result = build_forcing_dataframe(
-        request=forcing_request,
+        request=buffered_forcing_request,
         workspace=workspace,
     )
 

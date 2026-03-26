@@ -2,7 +2,7 @@ import pytest
 
 from snowpack_patrollers.config import generate_config_files
 from snowpack_patrollers.models import SiteConfig, SlopeConfig, SnowpackConfig
-from snowpack_patrollers.workflow import create_workspace
+from snowpack_patrollers.workflow import create_workspace, get_buffered_start_date
 
 
 def test_generate_config_files_writes_expected_ini(tmp_path):
@@ -110,3 +110,7 @@ def test_generate_config_files_requires_at_least_one_slope(tmp_path):
 
     with pytest.raises(ValueError, match="At least one slope must be selected"):
         generate_config_files(site=site, slopes=slopes, snowpack=snowpack, workspace=workspace)
+
+
+def test_get_buffered_start_date_uses_two_day_buffer():
+    assert get_buffered_start_date("2024-03-01") == "2024-02-28"
