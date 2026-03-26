@@ -21,3 +21,6 @@ def test_main_notebook_is_package_backed():
     assert '"--branch"' in combined
     assert "import google.colab" in combined
     assert "package_dir = repo_dir / \"snowpack_patrollers\"" in combined
+    assert "snowpack_patrollers.visualization" in combined
+    assert "snowpat>=0.8.7" in combined
+    assert "https://niviz.org/" in combined
